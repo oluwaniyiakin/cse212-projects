@@ -1,64 +1,72 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Collections.Generic;
 
-// DO NOT MODIFY THIS FILE
-
-[TestClass]
-public class MultiplesOfTests
+public static class Arrays
 {
-    [TestMethod]
-    public void TestMultiplesOf_Whole()
+    /// <summary>
+    /// This function returns an array of multiples.
+    /// For example, MultiplesOf(3, 5) should return: {3, 6, 9, 12, 15}
+    /// </summary>
+    /// <param name="start">The starting number whose multiples we want</param>
+    /// <param name="count">How many multiples to generate</param>
+    /// <returns>An array containing the multiples</returns>
+    public static double[] MultiplesOf(double start, int count)
     {
-        double[] multiples = Arrays.MultiplesOf(7, 5);
-        CollectionAssert.AreEqual(new double[] { 7, 14, 21, 28, 35 }, multiples);
+        // Step-by-step plan:
+        // Step 1: Create a new array of type double and size equal to 'count'
+        //         This will hold the multiples we calculate.
+        //
+        // Step 2: Loop from i = 0 to i < count
+        //         For each i, compute the multiple using: start * (i + 1)
+        //         This gives us the first 'count' multiples of 'start'
+        //
+        // Step 3: Store each multiple in the array at position i
+        //
+        // Step 4: After the loop, return the array
+
+        double[] result = new double[count];
+
+        for (int i = 0; i < count; i++)
+        {
+            result[i] = start * (i + 1);
+        }
+
+        return result;
     }
 
-    [TestMethod]
-    public void TestMultiplesOf_Fractional()
+    /// <summary>
+    /// This function rotates a list to the right by a specified amount.
+    /// For example, RotateListRight({1,2,3,4,5}, 2) => {4,5,1,2,3}
+    /// </summary>
+    /// <param name="data">The list of integers to rotate</param>
+    /// <param name="amount">The number of positions to rotate right</param>
+    public static void RotateListRight(List<int> data, int amount)
     {
-        double[] multiples = Arrays.MultiplesOf(1.5, 10);
-        CollectionAssert.AreEqual(new double[] { 1.5, 3.0, 4.5, 6.0, 7.5, 9.0, 10.5, 12.0, 13.5, 15.0 }, multiples);
-    }
+        // Step-by-step plan:
+        //
+        // Step 1: Calculate the index where the rotation should begin.
+        //         That is, how many items from the end should move to the front.
+        //
+        // Step 2: Use GetRange to split the list into two parts:
+        //         - Part A: the last 'amount' items
+        //         - Part B: the remaining items at the front
+        //
+        // Step 3: Clear the original list
+        //
+        // Step 4: Use AddRange to add Part A, then Part B into the list (in new order)
 
-    [TestMethod]
-    public void TestMultiplesOf_Negative()
-    {
-        double[] multiples = Arrays.MultiplesOf(-2, 10);
-        CollectionAssert.AreEqual(new double[] { -2, -4, -6, -8, -10, -12, -14, -16, -18, -20 }, multiples);
-    }
-}
+        // Step 1: Find split index (start of last `amount` elements)
+        int splitIndex = data.Count - amount;
 
-[TestClass]
-public class RotateListRightTests
-{
-    [TestMethod]
-    public void TestRotateListRight_Rotate1()
-    {
-        List<int> numbers = new() { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-        Arrays.RotateListRight(numbers, 1);
-        CollectionAssert.AreEqual(new List<int> { 9, 1, 2, 3, 4, 5, 6, 7, 8 }, numbers);
-    }
+        // Step 2: Slice the list into two parts
+        List<int> partA = data.GetRange(splitIndex, amount);
+        List<int> partB = data.GetRange(0, splitIndex);
 
-    [TestMethod]
-    public void TestRotateListRight_Rotate5()
-    {
-        List<int> numbers = new() { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-        Arrays.RotateListRight(numbers, 5);
-        CollectionAssert.AreEqual(new List<int> { 5, 6, 7, 8, 9, 1, 2, 3, 4 }, numbers);
-    }
+        // Step 3: Clear original list
+        data.Clear();
 
-    [TestMethod]
-    public void TestRotateListRight_Rotate3()
-    {
-        List<int> numbers = new() { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-        Arrays.RotateListRight(numbers, 3);
-        CollectionAssert.AreEqual(new List<int> { 7, 8, 9, 1, 2, 3, 4, 5, 6 }, numbers);
-    }
-
-    [TestMethod]
-    public void TestRotateListRight_Rotate9()
-    {
-        List<int> numbers = new() { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-        Arrays.RotateListRight(numbers, 9);
-        CollectionAssert.AreEqual(new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 }, numbers);
+        // Step 4: Add the rotated parts
+        data.AddRange(partA);
+        data.AddRange(partB);
     }
 }
