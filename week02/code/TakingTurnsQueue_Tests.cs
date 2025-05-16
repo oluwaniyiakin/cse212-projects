@@ -11,7 +11,11 @@ public class TakingTurnsQueueTests
     // Scenario: Create a queue with the following people and turns: Bob (2), Tim (5), Sue (3) and
     // run until the queue is empty
     // Expected Result: Bob, Tim, Sue, Bob, Tim, Sue, Tim, Sue, Tim, Tim
-    // Defect(s) Found: 
+
+     // Defect(s) Found: The original GetNextPerson() method did not re-add persons with infinite turns (turns <= 0),
+    // and also incorrectly handled people with exactly 1 turn remaining — it removed them without re-adding,
+    // but didn't treat "infinite" turns properly. Fixed by: ensuring persons with turns <= 0 are always re-added,
+    // and those with finite turns > 1 are decremented and re-added.
     public void TestTakingTurnsQueue_FiniteRepetition()
     {
         var bob = new Person("Bob", 2);
@@ -43,7 +47,8 @@ public class TakingTurnsQueueTests
     // Scenario: Create a queue with the following people and turns: Bob (2), Tim (5), Sue (3)
     // After running 5 times, add George with 3 turns.  Run until the queue is empty.
     // Expected Result: Bob, Tim, Sue, Bob, Tim, Sue, Tim, George, Sue, Tim, George, Tim, George
-    // Defect(s) Found: 
+    // Defect(s) Found: Same as previous — the queue logic didn't correctly re-add infinite turn users
+    // and had issues decrementing finite turns. After fixing the GetNextPerson logic, the behavior now matches expectations.
     public void TestTakingTurnsQueue_AddPlayerMidway()
     {
         var bob = new Person("Bob", 2);
@@ -85,7 +90,8 @@ public class TakingTurnsQueueTests
     // Scenario: Create a queue with the following people and turns: Bob (2), Tim (Forever), Sue (3)
     // Run 10 times.
     // Expected Result: Bob, Tim, Sue, Bob, Tim, Sue, Tim, Sue, Tim, Tim
-    // Defect(s) Found: 
+     // Defect(s) Found: Initially, people with 0 turns were not re-added, breaking the definition of "infinite turns."
+    // Fixed by checking for turns <= 0 and always re-adding such persons.
     public void TestTakingTurnsQueue_ForeverZero()
     {
         var timTurns = 0;
@@ -116,7 +122,8 @@ public class TakingTurnsQueueTests
     // Scenario: Create a queue with the following people and turns: Tim (Forever), Sue (3)
     // Run 10 times.
     // Expected Result: Tim, Sue, Tim, Sue, Tim, Sue, Tim, Tim, Tim, Tim
-    // Defect(s) Found: 
+     // Defect(s) Found: Same issue as previous test — turns < 0 was not treated as infinite.
+    // Fixed by treating any turns <= 0 as infinite (i.e., don't decrement, always re-add).
     public void TestTakingTurnsQueue_ForeverNegative()
     {
         var timTurns = -3;
@@ -143,7 +150,7 @@ public class TakingTurnsQueueTests
     [TestMethod]
     // Scenario: Try to get the next person from an empty queue
     // Expected Result: Exception should be thrown with appropriate error message.
-    // Defect(s) Found: 
+     // Defect(s) Found: No defects. The original implementation correctly throws an InvalidOperationException.
     public void TestTakingTurnsQueue_Empty()
     {
         var players = new TakingTurnsQueue();
