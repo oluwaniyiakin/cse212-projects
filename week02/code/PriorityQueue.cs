@@ -1,10 +1,14 @@
-﻿public class PriorityQueue
+﻿// PriorityQueue.cs
+using System;
+using System.Collections.Generic;
+
+public class PriorityQueue
 {
     private List<PriorityItem> _queue = new();
 
     /// <summary>
-    /// Add a new value to the queue with an associated priority.  The
-    /// node is always added to the back of the queue regardless of 
+    /// Add a new value to the queue with an associated priority.  
+    /// The node is always added to the back of the queue regardless of 
     /// the priority.
     /// </summary>
     /// <param name="value">The value</param>
@@ -15,24 +19,35 @@
         _queue.Add(newNode);
     }
 
+    /// <summary>
+    /// Remove and return the item with the highest priority.
+    /// If multiple items share the highest priority, remove the one closest to the front.
+    /// Throws exception if queue is empty.
+    /// </summary>
+    /// <returns>The value of the dequeued item</returns>
     public string Dequeue()
     {
-        if (_queue.Count == 0) // Verify the queue is not empty
+        if (_queue.Count == 0)
         {
             throw new InvalidOperationException("The queue is empty.");
         }
 
-        // Find the index of the item with the highest priority to remove
-        var highPriorityIndex = 0;
-        for (int index = 1; index < _queue.Count - 1; index++)
+        int highPriorityIndex = 0;
+        int highestPriority = _queue[0].Priority;
+
+        // Find first item with highest priority
+        for (int i = 1; i < _queue.Count; i++)
         {
-            if (_queue[index].Priority >= _queue[highPriorityIndex].Priority)
-                highPriorityIndex = index;
+            if (_queue[i].Priority > highestPriority)
+            {
+                highestPriority = _queue[i].Priority;
+                highPriorityIndex = i;
+            }
         }
 
-        // Remove and return the item with the highest priority
-        var value = _queue[highPriorityIndex].Value;
-        return value;
+        var item = _queue[highPriorityIndex];
+        _queue.RemoveAt(highPriorityIndex);
+        return item.Value;
     }
 
     public override string ToString()
