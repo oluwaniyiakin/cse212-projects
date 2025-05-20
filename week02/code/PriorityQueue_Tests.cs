@@ -1,6 +1,5 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-// TODO Problem 2 - Write and run test cases and fix the code to match requirements.
+using System;
 
 [TestClass]
 public class PriorityQueueTests
@@ -11,7 +10,11 @@ public class PriorityQueueTests
     // Defect(s) Found: None. This basic enqueue and dequeue operation passed with the fixed code.
     public void TestPriorityQueue_OneItem()
     {
-        ...
+        var pq = new PriorityQueue();
+        pq.Enqueue("A", 1);
+
+        var result = pq.Dequeue();
+        Assert.AreEqual("A", result);
     }
 
     [TestMethod]
@@ -21,7 +24,12 @@ public class PriorityQueueTests
     // Fixed by ensuring item with highest priority is dequeued.
     public void TestPriorityQueue_TwoItemsDifferentPriorities()
     {
-        ...
+        var pq = new PriorityQueue();
+        pq.Enqueue("A", 1);
+        pq.Enqueue("B", 5);
+
+        Assert.AreEqual("B", pq.Dequeue());
+        Assert.AreEqual("A", pq.Dequeue());
     }
 
     [TestMethod]
@@ -31,7 +39,12 @@ public class PriorityQueueTests
     // Fixed by preserving enqueue order among equal priority items.
     public void TestPriorityQueue_TwoItemsSamePriorities()
     {
-        ...
+        var pq = new PriorityQueue();
+        pq.Enqueue("A", 3);
+        pq.Enqueue("B", 3);
+
+        Assert.AreEqual("A", pq.Dequeue());
+        Assert.AreEqual("B", pq.Dequeue());
     }
 
     [TestMethod]
@@ -40,7 +53,14 @@ public class PriorityQueueTests
     // Defect(s) Found: None after fix. Dequeue now properly finds first item with highest priority.
     public void TestPriorityQueue_ThreeItems()
     {
-        ...
+        var pq = new PriorityQueue();
+        pq.Enqueue("A", 1);
+        pq.Enqueue("B", 3);
+        pq.Enqueue("C", 5);
+
+        Assert.AreEqual("C", pq.Dequeue());  // Highest priority
+        Assert.AreEqual("B", pq.Dequeue());  // Next highest
+        Assert.AreEqual("A", pq.Dequeue());  // Lowest priority
     }
 
     [TestMethod]
@@ -49,7 +69,17 @@ public class PriorityQueueTests
     // Defect(s) Found: None. Error handling works correctly.
     public void TestPriorityQueue_EmptyQueue()
     {
-        ...
+        var pq = new PriorityQueue();
+
+        try
+        {
+            pq.Dequeue();
+            Assert.Fail("Expected InvalidOperationException was not thrown.");
+        }
+        catch (InvalidOperationException ex)
+        {
+            Assert.AreEqual("The queue is empty.", ex.Message);
+        }
     }
 
     [TestMethod]
@@ -59,6 +89,15 @@ public class PriorityQueueTests
     // Fixed by ensuring the first among tied highest priorities is removed.
     public void TestPriorityQueue_MultipleSameHighPriorities()
     {
-        ...
+        var pq = new PriorityQueue();
+        pq.Enqueue("A", 5);
+        pq.Enqueue("B", 3);
+        pq.Enqueue("C", 5); // same priority as A
+        pq.Enqueue("D", 2);
+
+        Assert.AreEqual("A", pq.Dequeue());  // A first among tied highest
+        Assert.AreEqual("C", pq.Dequeue());  // then C
+        Assert.AreEqual("B", pq.Dequeue());  // next highest
+        Assert.AreEqual("D", pq.Dequeue());  // lowest
     }
 }

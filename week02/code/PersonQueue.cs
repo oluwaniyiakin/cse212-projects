@@ -1,5 +1,8 @@
+using System;
+using System.Collections.Generic;
+
 /// <summary>
-/// A basic implementation of a Queue
+/// A basic FIFO queue for Person objects
 /// </summary>
 public class PersonQueue
 {
@@ -7,25 +10,24 @@ public class PersonQueue
 
     public int Length => _queue.Count;
 
-    /// <summary>
-    /// Add a person to the queue
-    /// </summary>
-    /// <param name="person">The person to add</param>
     public void Enqueue(Person person)
     {
-        _queue.Insert(0, person);
+        _queue.Add(person); // Add to the back
     }
 
     public Person Dequeue()
     {
+        if (_queue.Count == 0)
+            throw new InvalidOperationException("Queue is empty.");
+
         var person = _queue[0];
-        _queue.RemoveAt(0);
+        _queue.RemoveAt(0); // Remove from the front
         return person;
     }
 
     public bool IsEmpty()
     {
-        return Length == 0;
+        return _queue.Count == 0;
     }
 
     public override string ToString()
