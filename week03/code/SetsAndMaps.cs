@@ -1,89 +1,136 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
 using System.Text.Json;
 
+/// <summary>
+/// This static class contains several methods solving problems
+/// related to Sets, Maps (Dictionaries), and JSON data handling.
+/// </summary>
 public static class SetsAndMaps
 {
     /// <summary>
-    /// The words parameter contains a list of two character 
-    /// words (lower case, no duplicates). Using sets, find an O(n) 
-    /// solution for returning all symmetric pairs of words.  
-    ///
-    /// For example, if words was: [am, at, ma, if, fi], we would return :
-    ///
+    /// The words parameter contains a list of two-character 
+    /// words (lowercase, no duplicates). Using sets, find an O(n) 
+    /// solution for returning all symmetric pairs of words.
+    /// 
+    /// For example, if words was: [am, at, ma, if, fi], this method
+    /// would return:
     /// ["am & ma", "if & fi"]
-    ///
-    /// The order of the array does not matter, nor does the order of the specific words in each string in the array.
-    /// at would not be returned because ta is not in the list of words.
-    ///
-    /// As a special case, if the letters are the same (example: 'aa') then
-    /// it would not match anything else (remember the assumption above
-    /// that there were no duplicates) and therefore should not be returned.
+    /// 
+    /// The order of the array and the order of words in each string
+    /// does not matter.
+    /// 
+    /// Special case: words like 'aa' are palindromes and do not form pairs.
     /// </summary>
     /// <param name="words">An array of 2-character words (lowercase, no duplicates)</param>
+    /// <returns>Array of strings describing symmetric pairs.</returns>
     public static string[] FindPairs(string[] words)
     {
-        // TODO Problem 1 - ADD YOUR CODE HERE
-        return [];
+        var wordSet = new HashSet<string>(words);
+        var result = new List<string>();
+        var seen = new HashSet<string>();
+
+        foreach (var word in words)
+        {
+            var reversed = new string(word.Reverse().ToArray());
+
+            if (word == reversed)
+                continue;
+
+            if (wordSet.Contains(reversed) && !seen.Contains(reversed))
+            {
+                result.Add($"{word} & {reversed}");
+                seen.Add(word);
+            }
+        }
+
+        return result.ToArray();
     }
 
     /// <summary>
-    /// Read a census file and summarize the degrees (education)
-    /// earned by those contained in the file.  The summary
-    /// should be stored in a dictionary where the key is the
-    /// degree earned and the value is the number of people that 
-    /// have earned that degree.  The degree information is in
-    /// the 4th column of the file.  There is no header row in the
-    /// file.
+    /// Reads a census file and summarizes the degrees (education)
+    /// earned by those contained in the file. The summary is stored
+    /// in a dictionary where the key is the degree and the value is
+    /// the number of people who earned that degree.
+    /// 
+    /// The degree information is located in the 4th column (index 3).
+    /// Assumes no header row in the file.
     /// </summary>
-    /// <param name="filename">The name of the file to read</param>
-    /// <returns>fixed array of divisors</returns>
+    /// <param name="filename">The filename to read</param>
+    /// <returns>A dictionary mapping degree name to count</returns>
     public static Dictionary<string, int> SummarizeDegrees(string filename)
     {
         var degrees = new Dictionary<string, int>();
+
         foreach (var line in File.ReadLines(filename))
         {
-            var fields = line.Split(",");
-            // TODO Problem 2 - ADD YOUR CODE HERE
+            var fields = line.Split(',');
+
+            if (fields.Length < 4)
+                continue;
+
+            var degree = fields[3].Trim();
+
+            if (degrees.ContainsKey(degree))
+                degrees[degree]++;
+            else
+                degrees[degree] = 1;
         }
 
         return degrees;
     }
 
     /// <summary>
-    /// Determine if 'word1' and 'word2' are anagrams.  An anagram
-    /// is when the same letters in a word are re-organized into a 
-    /// new word.  A dictionary is used to solve the problem.
+    /// Determines if 'word1' and 'word2' are anagrams.
+    /// An anagram is when the same letters of a word are
+    /// rearranged to form a new word.
+    /// 
+    /// This method ignores spaces and case differences.
+    /// Uses a dictionary to count letter frequencies.
     /// 
     /// Examples:
-    /// is_anagram("CAT","ACT") would return true
-    /// is_anagram("DOG","GOOD") would return false because GOOD has 2 O's
-    /// 
-    /// Important Note: When determining if two words are anagrams, you
-    /// should ignore any spaces.  You should also ignore cases.  For 
-    /// example, 'Ab' and 'Ba' should be considered anagrams
-    /// 
-    /// Reminder: You can access a letter by index in a string by 
-    /// using the [] notation.
+    /// IsAnagram("CAT","ACT") returns true
+    /// IsAnagram("DOG","GOOD") returns false
     /// </summary>
+    /// <param name="word1">First word</param>
+    /// <param name="word2">Second word</param>
+    /// <returns>True if the words are anagrams; otherwise false</returns>
     public static bool IsAnagram(string word1, string word2)
     {
-        // TODO Problem 3 - ADD YOUR CODE HERE
-        return false;
+        var w1 = word1.Replace(" ", "").ToLower();
+        var w2 = word2.Replace(" ", "").ToLower();
+
+        if (w1.Length != w2.Length)
+            return false;
+
+        var letterCounts = new Dictionary<char, int>();
+
+        foreach (var c in w1)
+        {
+            if (!letterCounts.ContainsKey(c))
+                letterCounts[c] = 0;
+            letterCounts[c]++;
+        }
+
+        foreach (var c in w2)
+        {
+            if (!letterCounts.ContainsKey(c) || letterCounts[c] == 0)
+                return false;
+
+            letterCounts[c]--;
+        }
+
+        return true;
     }
 
     /// <summary>
-    /// This function will read JSON (Javascript Object Notation) data from the 
-    /// United States Geological Service (USGS) consisting of earthquake data.
-    /// The data will include all earthquakes in the current day.
-    /// 
-    /// JSON data is organized into a dictionary. After reading the data using
-    /// the built-in HTTP client library, this function will return a list of all
-    /// earthquake locations ('place' attribute) and magnitudes ('mag' attribute).
-    /// Additional information about the format of the JSON data can be found 
-    /// at this website:  
-    /// 
-    /// https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php
-    /// 
+    /// Reads JSON data from the USGS earthquake API for all earthquakes today,
+    /// deserializes it, and returns a summary of earthquake locations and magnitudes.
     /// </summary>
+    /// <returns>Array of strings describing each earthquake's place and magnitude</returns>
     public static string[] EarthquakeDailySummary()
     {
         const string uri = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson";
@@ -92,15 +139,54 @@ public static class SetsAndMaps
         using var jsonStream = client.Send(getRequestMessage).Content.ReadAsStream();
         using var reader = new StreamReader(jsonStream);
         var json = reader.ReadToEnd();
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         var featureCollection = JsonSerializer.Deserialize<FeatureCollection>(json, options);
 
-        // TODO Problem 5:
-        // 1. Add code in FeatureCollection.cs to describe the JSON using classes and properties 
-        // on those classes so that the call to Deserialize above works properly.
-        // 2. Add code below to create a string out each place a earthquake has happened today and its magitude.
-        // 3. Return an array of these string descriptions.
-        return [];
+        if (featureCollection?.Features == null)
+        {
+            return Array.Empty<string>();
+        }
+
+        var summaries = new List<string>();
+
+        foreach (var feature in featureCollection.Features)
+        {
+            string place = feature.Properties?.Place ?? "Unknown location";
+            double? mag = feature.Properties?.Mag;
+
+            string magStr = mag.HasValue ? mag.Value.ToString("0.0") : "N/A";
+            string summary = $"Place: {place}, Magnitude: {magStr}";
+            summaries.Add(summary);
+        }
+
+        return summaries.ToArray();
     }
+}
+
+/// <summary>
+/// Represents the top-level collection of earthquake features
+/// in the GeoJSON data returned by the USGS API.
+/// </summary>
+public class FeatureCollection
+{
+    public List<Feature> Features { get; set; }
+}
+
+/// <summary>
+/// Represents each individual earthquake event (feature)
+/// containing properties like place and magnitude.
+/// </summary>
+public class Feature
+{
+    public Properties Properties { get; set; }
+}
+
+/// <summary>
+/// Represents the earthquake properties such as location and magnitude.
+/// </summary>
+public class Properties
+{
+    public string Place { get; set; }
+    public double? Mag { get; set; }
 }
