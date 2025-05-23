@@ -15,18 +15,7 @@ public static class SetsAndMaps
     /// The words parameter contains a list of two-character 
     /// words (lowercase, no duplicates). Using sets, find an O(n) 
     /// solution for returning all symmetric pairs of words.
-    /// 
-    /// For example, if words was: [am, at, ma, if, fi], this method
-    /// would return:
-    /// ["am & ma", "if & fi"]
-    /// 
-    /// The order of the array and the order of words in each string
-    /// does not matter.
-    /// 
-    /// Special case: words like 'aa' are palindromes and do not form pairs.
     /// </summary>
-    /// <param name="words">An array of 2-character words (lowercase, no duplicates)</param>
-    /// <returns>Array of strings describing symmetric pairs.</returns>
     public static string[] FindPairs(string[] words)
     {
         var wordSet = new HashSet<string>(words);
@@ -37,13 +26,13 @@ public static class SetsAndMaps
         {
             var reversed = new string(word.Reverse().ToArray());
 
-            if (word == reversed)
-                continue;
+            if (word == reversed) continue;
 
-            if (wordSet.Contains(reversed) && !seen.Contains(reversed))
+            if (wordSet.Contains(reversed) && !seen.Contains(reversed) && !seen.Contains(word))
             {
                 result.Add($"{word} & {reversed}");
                 seen.Add(word);
+                seen.Add(reversed);
             }
         }
 
@@ -52,15 +41,8 @@ public static class SetsAndMaps
 
     /// <summary>
     /// Reads a census file and summarizes the degrees (education)
-    /// earned by those contained in the file. The summary is stored
-    /// in a dictionary where the key is the degree and the value is
-    /// the number of people who earned that degree.
-    /// 
-    /// The degree information is located in the 4th column (index 3).
-    /// Assumes no header row in the file.
+    /// earned by those contained in the file.
     /// </summary>
-    /// <param name="filename">The filename to read</param>
-    /// <returns>A dictionary mapping degree name to count</returns>
     public static Dictionary<string, int> SummarizeDegrees(string filename)
     {
         var degrees = new Dictionary<string, int>();
@@ -68,11 +50,10 @@ public static class SetsAndMaps
         foreach (var line in File.ReadLines(filename))
         {
             var fields = line.Split(',');
-
-            if (fields.Length < 4)
-                continue;
+            if (fields.Length < 4) continue;
 
             var degree = fields[3].Trim();
+            if (degree == "") continue;
 
             if (degrees.ContainsKey(degree))
                 degrees[degree]++;
@@ -85,41 +66,24 @@ public static class SetsAndMaps
 
     /// <summary>
     /// Determines if 'word1' and 'word2' are anagrams.
-    /// An anagram is when the same letters of a word are
-    /// rearranged to form a new word.
-    /// 
-    /// This method ignores spaces and case differences.
-    /// Uses a dictionary to count letter frequencies.
-    /// 
-    /// Examples:
-    /// IsAnagram("CAT","ACT") returns true
-    /// IsAnagram("DOG","GOOD") returns false
     /// </summary>
-    /// <param name="word1">First word</param>
-    /// <param name="word2">Second word</param>
-    /// <returns>True if the words are anagrams; otherwise false</returns>
     public static bool IsAnagram(string word1, string word2)
     {
         var w1 = word1.Replace(" ", "").ToLower();
         var w2 = word2.Replace(" ", "").ToLower();
 
-        if (w1.Length != w2.Length)
-            return false;
+        if (w1.Length != w2.Length) return false;
 
         var letterCounts = new Dictionary<char, int>();
-
         foreach (var c in w1)
         {
-            if (!letterCounts.ContainsKey(c))
-                letterCounts[c] = 0;
+            if (!letterCounts.ContainsKey(c)) letterCounts[c] = 0;
             letterCounts[c]++;
         }
 
         foreach (var c in w2)
         {
-            if (!letterCounts.ContainsKey(c) || letterCounts[c] == 0)
-                return false;
-
+            if (!letterCounts.ContainsKey(c) || letterCounts[c] == 0) return false;
             letterCounts[c]--;
         }
 
@@ -128,25 +92,19 @@ public static class SetsAndMaps
 
     /// <summary>
     /// Reads JSON data from the USGS earthquake API for all earthquakes today,
-    /// deserializes it, and returns a summary of earthquake locations and magnitudes.
+    /// deserializes it, and returns a summary of locations and magnitudes.
     /// </summary>
-    /// <returns>Array of strings describing each earthquake's place and magnitude</returns>
     public static string[] EarthquakeDailySummary()
     {
-        const string uri = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson";
+        const string url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson";
         using var client = new HttpClient();
-        using var getRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
-        using var jsonStream = client.Send(getRequestMessage).Content.ReadAsStream();
-        using var reader = new StreamReader(jsonStream);
-        var json = reader.ReadToEnd();
 
+        var jsonStream = client.GetStreamAsync(url).Result;
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        var featureCollection = JsonSerializer.Deserialize<FeatureCollection>(json, options);
+        var featureCollection = JsonSerializer.Deserialize<FeatureCollection>(jsonStream, options);
 
-        if (featureCollection?.Features == null)
-        {
+        if (featureCollection?.Features == null || featureCollection.Features.Count == 0)
             return Array.Empty<string>();
-        }
 
         var summaries = new List<string>();
 
@@ -155,11 +113,30 @@ public static class SetsAndMaps
             string place = feature.Properties?.Place ?? "Unknown location";
             double? mag = feature.Properties?.Mag;
 
-            string magStr = mag.HasValue ? mag.Value.ToString("0.0") : "N/A";
-            string summary = $"Place: {place}, Magnitude: {magStr}";
-            summaries.Add(summary);
+            if (mag.HasValue)
+            {
+                string summary = $"Place: {place}, Magnitude: {mag.Value:0.0}";
+                summaries.Add(summary);
+            }
         }
 
         return summaries.ToArray();
+    }
+
+    // JSON mapping classes
+    public class FeatureCollection
+    {
+        public List<Feature> Features { get; set; }
+    }
+
+    public class Feature
+    {
+        public Properties Properties { get; set; }
+    }
+
+    public class Properties
+    {
+        public string Place { get; set; }
+        public double? Mag { get; set; }
     }
 }
