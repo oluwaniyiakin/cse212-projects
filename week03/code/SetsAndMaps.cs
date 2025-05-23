@@ -163,30 +163,3 @@ public static class SetsAndMaps
         return summaries.ToArray();
     }
 }
-
-/// <summary>
-/// Represents the top-level collection of earthquake features
-/// in the GeoJSON data returned by the USGS API.
-/// </summary>
-public class FeatureCollection
-{
-    public List<Feature> Features { get; set; }
-}
-
-/// <summary>
-/// Represents each individual earthquake event (feature)
-/// containing properties like place and magnitude.
-/// </summary>
-public class Feature
-{
-    public Properties Properties { get; set; }
-}
-
-/// <summary>
-/// Represents the earthquake properties such as location and magnitude.
-/// </summary>
-public class Properties
-{
-    public string Place { get; set; }
-    public double? Mag { get; set; }
-}
