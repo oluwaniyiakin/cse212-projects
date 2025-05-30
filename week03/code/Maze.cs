@@ -46,14 +46,17 @@ public class Maze
     {
         var currentLocation = (_currX, _currY);
 
-        // Check if current location exists in maze map
         if (!_mazeMap.ContainsKey(currentLocation))
             throw new InvalidOperationException("Invalid current location in maze.");
 
-        // Index 0 = left direction
+        // Check if movement left is allowed from current location
         if (_mazeMap[currentLocation][0])
         {
-            _currX--; // Move left decreases x by 1
+            var nextLocation = (_currX - 1, _currY);
+            if (_mazeMap.ContainsKey(nextLocation))
+                _currX--;
+            else
+                throw new InvalidOperationException("Can't go that way (no cell)!");
         }
         else
         {
@@ -72,10 +75,13 @@ public class Maze
         if (!_mazeMap.ContainsKey(currentLocation))
             throw new InvalidOperationException("Invalid current location in maze.");
 
-        // Index 1 = right direction
         if (_mazeMap[currentLocation][1])
         {
-            _currX++; // Move right increases x by 1
+            var nextLocation = (_currX + 1, _currY);
+            if (_mazeMap.ContainsKey(nextLocation))
+                _currX++;
+            else
+                throw new InvalidOperationException("Can't go that way (no cell)!");
         }
         else
         {
@@ -94,10 +100,13 @@ public class Maze
         if (!_mazeMap.ContainsKey(currentLocation))
             throw new InvalidOperationException("Invalid current location in maze.");
 
-        // Index 2 = up direction
         if (_mazeMap[currentLocation][2])
         {
-            _currY++; // Move up increases y by 1
+            var nextLocation = (_currX, _currY + 1);
+            if (_mazeMap.ContainsKey(nextLocation))
+                _currY++;
+            else
+                throw new InvalidOperationException("Can't go that way (no cell)!");
         }
         else
         {
@@ -116,10 +125,13 @@ public class Maze
         if (!_mazeMap.ContainsKey(currentLocation))
             throw new InvalidOperationException("Invalid current location in maze.");
 
-        // Index 3 = down direction
         if (_mazeMap[currentLocation][3])
         {
-            _currY--; // Move down decreases y by 1
+            var nextLocation = (_currX, _currY - 1);
+            if (_mazeMap.ContainsKey(nextLocation))
+                _currY--;
+            else
+                throw new InvalidOperationException("Can't go that way (no cell)!");
         }
         else
         {

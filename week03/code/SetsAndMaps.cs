@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 /// <summary>
 /// This static class contains several methods solving problems
@@ -26,7 +27,7 @@ public static class SetsAndMaps
         {
             var reversed = new string(word.Reverse().ToArray());
 
-            if (word == reversed) continue;
+            if (word == reversed) continue; // skip palindromic pairs
 
             if (wordSet.Contains(reversed) && !seen.Contains(reversed) && !seen.Contains(word))
             {
@@ -53,7 +54,7 @@ public static class SetsAndMaps
             if (fields.Length < 4) continue;
 
             var degree = fields[3].Trim();
-            if (degree == "") continue;
+            if (string.IsNullOrEmpty(degree)) continue;
 
             if (degrees.ContainsKey(degree))
                 degrees[degree]++;
@@ -96,31 +97,39 @@ public static class SetsAndMaps
     /// </summary>
     public static string[] EarthquakeDailySummary()
     {
-        const string url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson";
-        using var client = new HttpClient();
-
-        var jsonStream = client.GetStreamAsync(url).Result;
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        var featureCollection = JsonSerializer.Deserialize<FeatureCollection>(jsonStream, options);
-
-        if (featureCollection?.Features == null || featureCollection.Features.Count == 0)
-            return Array.Empty<string>();
-
-        var summaries = new List<string>();
-
-        foreach (var feature in featureCollection.Features)
+        try
         {
-            string place = feature.Properties?.Place ?? "Unknown location";
-            double? mag = feature.Properties?.Mag;
+            const string url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson";
+            using var client = new HttpClient();
 
-            if (mag.HasValue)
+            var jsonStream = client.GetStreamAsync(url).Result;
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var featureCollection = JsonSerializer.Deserialize<FeatureCollection>(jsonStream, options);
+
+            if (featureCollection?.Features == null || featureCollection.Features.Count == 0)
+                return Array.Empty<string>();
+
+            var summaries = new List<string>();
+
+            foreach (var feature in featureCollection.Features)
             {
-                string summary = $"Place: {place}, Magnitude: {mag.Value:0.0}";
+                string place = feature.Properties?.Place ?? "Unknown location";
+                double? mag = feature.Properties?.Mag;
+
+                // If magnitude is missing, use "N/A"
+                string magString = mag.HasValue ? mag.Value.ToString("0.0") : "N/A";
+
+                string summary = $"Place: {place}, Magnitude: {magString}";
                 summaries.Add(summary);
             }
-        }
 
-        return summaries.ToArray();
+            return summaries.ToArray();
+        }
+        catch (Exception ex)
+        {
+            // In case of failure (e.g., network issues), return an empty array or an error message
+            return new string[] { $"Error fetching earthquake data: {ex.Message}" };
+        }
     }
 
     // JSON mapping classes
