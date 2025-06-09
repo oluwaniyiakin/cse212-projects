@@ -1,45 +1,61 @@
 public class Node
 {
     public int Data { get; set; }
-    public Node? Right { get; private set; }
     public Node? Left { get; private set; }
+    public Node? Right { get; private set; }
 
     public Node(int data)
     {
-        this.Data = data;
+        Data = data;
     }
 
     public void Insert(int value)
     {
-        // TODO Start Problem 1
-
         if (value < Data)
         {
-            // Insert to the left
-            if (Left is null)
+            if (Left == null)
                 Left = new Node(value);
             else
                 Left.Insert(value);
         }
-        else
+        else if (value > Data) // Prevent duplicates
         {
-            // Insert to the right
-            if (Right is null)
+            if (Right == null)
                 Right = new Node(value);
             else
                 Right.Insert(value);
         }
+        // If value == Data, do nothing (avoid duplicates)
     }
 
     public bool Contains(int value)
     {
-        // TODO Start Problem 2
-        return false;
+        if (value == Data)
+            return true;
+        else if (value < Data)
+            return Left != null && Left.Contains(value);
+        else
+            return Right != null && Right.Contains(value);
     }
 
     public int GetHeight()
     {
-        // TODO Start Problem 4
-        return 0; // Replace this line with the correct return statement(s)
+        int leftHeight = Left?.GetHeight() ?? 0;
+        int rightHeight = Right?.GetHeight() ?? 0;
+        return 1 + Math.Max(leftHeight, rightHeight);
+    }
+
+    public void TraverseInOrder(List<int> result)
+    {
+        Left?.TraverseInOrder(result);
+        result.Add(Data);
+        Right?.TraverseInOrder(result);
+    }
+
+    public void TraverseReverseOrder(List<int> result)
+    {
+        Right?.TraverseReverseOrder(result);
+        result.Add(Data);
+        Left?.TraverseReverseOrder(result);
     }
 }
